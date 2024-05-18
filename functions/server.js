@@ -32,6 +32,20 @@ async function run() {
 
     app.use(express.json());
 
+    // Endpoint GET /api/users
+    app.get("/api/users", async (req, res) => {
+      try {
+        const users = await usersCollection.find({}).toArray();
+        res.status(200).json(users);
+      } catch (error) {
+        console.error("Błąd podczas pobierania użytkowników:", error);
+        res
+          .status(500)
+          .json({ message: "Wystąpił błąd podczas pobierania użytkowników." });
+      }
+    });
+
+    // Endpoint POST /api/users
     app.post("/api/users", async (req, res) => {
       const { username, password } = req.body;
 
