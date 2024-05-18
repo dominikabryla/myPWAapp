@@ -2,6 +2,7 @@ const express = require("express");
 const { MongoClient, ServerApiVersion } = require("mongodb");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const bcrypt = require("bcrypt");
 
 const app = express();
 app.use(cors());
@@ -10,7 +11,7 @@ app.use(bodyParser.json());
 const port = process.env.PORT || 8080;
 
 const uri =
-  "mongodb+srv://dominikabrylaa:qxiyxSyYCNPdFaAU@myapppwa.11a24n3.mongodb.net/?retryWrites=true&w=majority&appName=myAppPWA";
+  "mongodb+srv://dominikabrylaa:qxiyxSyYCNPdFaAU@myapppwa.11a24n3.mongodb.net/myAppPWA?retryWrites=true&w=majority";
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
@@ -31,6 +32,7 @@ async function connectToDatabase() {
   }
 }
 connectToDatabase();
+
 app.post("/api/users", async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -40,24 +42,23 @@ app.post("/api/users", async (req, res) => {
         .status(400)
         .json({ message: "Username and password are required" });
     }
- const hashedPassword = await bcrypt.hash(password, 10);
-    const database = client.db("sample_mflix");
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const database = client.db("myAppPWA");
     const collection = database.collection("users");
 
     const newUser = {
-      name: username,
+      username: username,
       email: `${username}@example.com`,
       password: hashedPassword,
     };
 
     const result = await collection.insertOne(newUser);
 
-    res
-      .status(201)
-      .json({
-        message: "User created successfully",
-        userId: result.insertedId,
-      });
+    res.status(201).json({
+      message: "User created successfully",
+      userId: result.insertedId,
+    });
   } catch (err) {
     console.error("Error creating user:", err);
     res.status(500).json({ message: "Internal server error" });
@@ -66,7 +67,7 @@ app.post("/api/users", async (req, res) => {
 
 app.get("/api/users", async (req, res) => {
   try {
-    const database = client.db("sample_mflix");
+    const database = client.db("myAppPWA");
     const collection = database.collection("users");
 
     const users = await collection.find({}).toArray();
