@@ -40,13 +40,14 @@ app.post("/api/users", async (req, res) => {
         .status(400)
         .json({ message: "Username and password are required" });
     }
-
+ const hashedPassword = await bcrypt.hash(password, 10);
     const database = client.db("sample_mflix");
     const collection = database.collection("users");
 
     const newUser = {
       name: username,
-      password: password, 
+      email: `${username}@example.com`,
+      password: hashedPassword,
     };
 
     const result = await collection.insertOne(newUser);
