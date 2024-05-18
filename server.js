@@ -1,14 +1,12 @@
 const express = require("express");
 const { MongoClient, ServerApiVersion } = require("mongodb");
-const bodyParser = require("body-parser");
 const cors = require("cors");
-const bcrypt = require("bcrypt");
 
 const app = express();
 app.use(cors());
-app.use(bodyParser.json());
+app.use(express.json()); // Use express.json() to parse JSON bodies
 
-const port = process.env.PORT || 8080;
+const port = process.env.PORT || 8000;
 
 // MongoDB connection URI
 const uri =
@@ -27,9 +25,9 @@ const client = new MongoClient(uri, {
 async function connectToDatabase() {
   try {
     await client.connect();
-    console.log("Connected to MongoDB!");
+    console.log("Połączono z bazą danych MongoDB!");
   } catch (err) {
-    console.error("Failed to connect to MongoDB", err);
+    console.error("Błąd połączenia z MongoDB:", err);
   }
 }
 connectToDatabase();
@@ -53,10 +51,9 @@ app.post("/api/users", async (req, res) => {
       return res.status(400).json({ message: "Username already exists." });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = {
       username: username,
-      password: hashedPassword,
+      password: password, // Plain text password
     };
 
     const result = await collection.insertOne(newUser);
@@ -87,5 +84,5 @@ app.get("/api/users", async (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}/`);
+  console.log(`Serwer nasłuchuje na porcie ${port}.`);
 });
