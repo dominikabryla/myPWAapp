@@ -1,5 +1,6 @@
-const express = require("express");
 const { MongoClient, ServerApiVersion } = require("mongodb");
+const express = require("express");
+const serverless = require("serverless-http");
 const cors = require("cors");
 
 const app = express();
@@ -14,7 +15,6 @@ const client = new MongoClient(uri, {
     strict: true,
     deprecationErrors: true,
   },
-  useUnifiedTopology: true,
   tlsAllowInvalidCertificates: true,
   tlsAllowInvalidHostnames: true,
 });
@@ -60,3 +60,5 @@ async function run() {
   }
 }
 run().catch(console.dir);
+
+module.exports.handler = serverless(app);
