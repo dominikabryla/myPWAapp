@@ -1,15 +1,16 @@
 const express = require("express");
 const { MongoClient, ServerApiVersion } = require("mongodb");
-const bodyParser = require("body-parser");
 const cors = require("cors");
-const serverless = require("serverless-http");
 
 const app = express();
 app.use(cors());
-app.use(bodyParser.json());
+app.use(express.json()); // Use express.json() to parse JSON bodies
 
+const port = process.env.PORT || 8000;
+
+// MongoDB connection URI
 const uri =
-  "mongodb+srv://dominikabrylaa:qxiyxSyYCNPdFaAU@myapppwa.11a24n3.mongodb.net/?retryWrites=true&w=majority&appName=myAppPWA";
+  "mongodb+srv://dominikabrylaa:qxiyxSyYCNPdFaAU@myapppwa.11a24n3.mongodb.net/userAuthDB?retryWrites=true&w=majority";
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
@@ -24,13 +25,14 @@ const client = new MongoClient(uri, {
 async function connectToDatabase() {
   try {
     await client.connect();
-    console.log("Connected to MongoDB!");
+    console.log("Połączono z bazą danych MongoDB!");
   } catch (err) {
-    console.error("Failed to connect to MongoDB", err);
+    console.error("Błąd połączenia z MongoDB:", err);
   }
 }
 connectToDatabase();
 
+// Function to create a new user
 app.post("/api/users", async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -41,13 +43,17 @@ app.post("/api/users", async (req, res) => {
         .json({ message: "Username and password are required" });
     }
 
-    const database = client.db("sample_mflix");
+    const database = client.db("userAuthDB");
     const collection = database.collection("users");
 
+    const existingUser = await collection.findOne({ username });
+    if (existingUser) {
+      return res.status(400).json({ message: "Username already exists." });
+    }
+
     const newUser = {
-      name: username,
-      email: `${username}@example.com`,
-      password: password, // In a real app, make sure to hash the password
+      username: username,
+      password: password, // Plain text password
     };
 
     const result = await collection.insertOne(newUser);
@@ -62,9 +68,10 @@ app.post("/api/users", async (req, res) => {
   }
 });
 
+// Function to get all users
 app.get("/api/users", async (req, res) => {
   try {
-    const database = client.db("sample_mflix");
+    const database = client.db("userAuthDB");
     const collection = database.collection("users");
 
     const users = await collection.find({}).toArray();
@@ -76,4 +83,6 @@ app.get("/api/users", async (req, res) => {
   }
 });
 
-module.exports.handler = serverless(app);
+app.listen(port, () => {
+  console.log(`Serwer nasłuchuje na porcie ${port}.`);
+});
