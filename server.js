@@ -12,7 +12,7 @@ const port = process.env.PORT || 8080;
 
 // MongoDB connection URI
 const uri =
-  "mongodb+srv://dominikabrylaa:qxiyxSyYCNPdFaAU@myapppwa.11a24n3.mongodb.net/sample_mflix?retryWrites=true&w=majority";
+  "mongodb+srv://dominikabrylaa:qxiyxSyYCNPdFaAU@myapppwa.11a24n3.mongodb.net/userAuthDB?retryWrites=true&w=majority";
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
@@ -45,7 +45,7 @@ app.post("/api/users", async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const database = client.db("sample_mflix");
+    const database = client.db("userAuthDB");
     const collection = database.collection("users");
 
     const newUser = {
@@ -68,7 +68,7 @@ app.post("/api/users", async (req, res) => {
 
 app.get("/api/users", async (req, res) => {
   try {
-    const database = client.db("sample_mflix");
+    const database = client.db("userAuthDB");
     const collection = database.collection("users");
 
     const users = await collection.find({}).toArray();
