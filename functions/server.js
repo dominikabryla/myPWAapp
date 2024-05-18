@@ -1,5 +1,5 @@
-const { MongoClient, ServerApiVersion } = require("mongodb");
 const express = require("express");
+const { MongoClient, ServerApiVersion } = require("mongodb");
 const serverless = require("serverless-http");
 const cors = require("cors");
 
@@ -32,7 +32,7 @@ async function run() {
 
     app.use(express.json());
 
-    // Endpoint GET /api/users
+
     app.get("/api/users", async (req, res) => {
       try {
         const users = await usersCollection.find({}).toArray();
@@ -45,7 +45,7 @@ async function run() {
       }
     });
 
-    // Endpoint POST /api/users
+
     app.post("/api/users", async (req, res) => {
       const { username, password } = req.body;
 
@@ -73,6 +73,7 @@ async function run() {
     console.error(error);
   }
 }
+
 run().catch(console.dir);
 
 module.exports.handler = serverless(app);
