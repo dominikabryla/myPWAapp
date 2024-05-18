@@ -1,12 +1,2 @@
 [build]
   functions = "functions"
-
-[[redirects]]
-  from = "/*"
-  to = "/functions/server"
-  status = 200
-
-
-  [dev]
-  targetPort = 4000
-  port = 8888
