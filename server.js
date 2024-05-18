@@ -1,5 +1,5 @@
 const express = require("express");
-const mongoose = require("mongoose");
+const { MongoClient, ServerApiVersion } = require("mongodb");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const bcrypt = require("bcrypt");
@@ -13,66 +13,76 @@ const port = process.env.PORT || 8080;
 // MongoDB connection URI
 const uri =
   "mongodb+srv://dominikabrylaa:qxiyxSyYCNPdFaAU@myapppwa.11a24n3.mongodb.net/userAuthDB?retryWrites=true&w=majority";
-
-// Connect to MongoDB using Mongoose
-mongoose
-  .connect(uri, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    serverApi: { version: "1", strict: true, deprecationErrors: true },
-    tlsAllowInvalidCertificates: true,
-    tlsAllowInvalidHostnames: true,
-  })
-  .then(() => {
-    console.log("Connected to MongoDB!");
-  })
-  .catch((err) => {
-    console.error("Failed to connect to MongoDB", err);
-  });
-
-// Define the User schema
-const userSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
+const client = new MongoClient(uri, {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  },
+  useUnifiedTopology: true,
+  tlsAllowInvalidCertificates: true,
+  tlsAllowInvalidHostnames: true,
 });
 
-const User = mongoose.model("User", userSchema);
-
-// Endpoint to create a new user
-app.post("/api/users", async (req, res) => {
-  const { username, password } = req.body;
-
-  if (!username || !password) {
-    return res
-      .status(400)
-      .json({ message: "Username and password are required" });
-  }
-
+async function connectToDatabase() {
   try {
-    const existingUser = await User.findOne({ username });
+    await client.connect();
+    console.log("Connected to MongoDB!");
+  } catch (err) {
+    console.error("Failed to connect to MongoDB", err);
+  }
+}
+connectToDatabase();
+
+// Function to create a new user
+app.post("/api/users", async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+      return res
+        .status(400)
+        .json({ message: "Username and password are required" });
+    }
+
+    const database = client.db("userAuthDB");
+    const collection = database.collection("users");
+
+    const existingUser = await collection.findOne({ username });
     if (existingUser) {
       return res.status(400).json({ message: "Username already exists." });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ username, password: hashedPassword });
+    const newUser = {
+      username: username,
+      password: hashedPassword,
+    };
 
-    await newUser.save();
-    res.status(201).json({ message: "User created successfully." });
-  } catch (error) {
-    console.error("Error creating user:", error);
-    res.status(500).json({ message: "Error creating user." });
+    const result = await collection.insertOne(newUser);
+
+    res.status(201).json({
+      message: "User created successfully",
+      userId: result.insertedId,
+    });
+  } catch (err) {
+    console.error("Error creating user:", err);
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 
-// Endpoint to get all users
+// Function to get all users
 app.get("/api/users", async (req, res) => {
   try {
-    const users = await User.find({});
+    const database = client.db("userAuthDB");
+    const collection = database.collection("users");
+
+    const users = await collection.find({}).toArray();
+
     res.status(200).json(users);
-  } catch (error) {
-    console.error("Error fetching users:", error);
-    res.status(500).json({ message: "Error fetching users." });
+  } catch (err) {
+    console.error("Error fetching users:", err);
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 
