@@ -7,7 +7,7 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-const PORT = process.env.PORT || 5000;
+const port = process.env.PORT || 8080;
 
 const uri =
   "mongodb+srv://dominikabrylaa:qxiyxSyYCNPdFaAU@myapppwa.11a24n3.mongodb.net/?retryWrites=true&w=majority&appName=myAppPWA";
@@ -46,8 +46,7 @@ app.post("/api/users", async (req, res) => {
 
     const newUser = {
       name: username,
-      email: `${username}@example.com`,
-      password: password, // In a real app, make sure to hash the password
+      password: password, 
     };
 
     const result = await collection.insertOne(newUser);
