@@ -32,7 +32,11 @@ async function run() {
 
     app.use(express.json());
 
+<<<<<<< HEAD
 
+=======
+    // Endpoint GET /api/users
+>>>>>>> 6169df8 (Add)
     app.get("/api/users", async (req, res) => {
       try {
         const users = await usersCollection.find({}).toArray();
@@ -45,7 +49,11 @@ async function run() {
       }
     });
 
+<<<<<<< HEAD
 
+=======
+    // Endpoint POST /api/users
+>>>>>>> 6169df8 (Add)
     app.post("/api/users", async (req, res) => {
       const { username, password } = req.body;
 
