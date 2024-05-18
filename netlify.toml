@@ -1,7 +1,2 @@
 [build]
-  functions = "backend/functions"
-
-[[redirects]]
-  from = "/*"
-  to = "/.netlify/functions/server"
-  status = 200
+  functions = "functions"
